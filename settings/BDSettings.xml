@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DBSettings>
+  <DB name="ChatDinPostgres">
+    <Engine>postgres</Engine>
+    <Server>localhost</Server>
+    <Port>5432</Port>
+    <User>postgres</User>
+    <Password>123456</Password>
+    <Database>ChatDin_DB</Database>
+    <SslMode>disable</SslMode>
+  </DB>
+  <DB name="ChatDinSQLServer">
+    <Engine>SQLServer</Engine>
+    <Server>localhost</Server>
+    <Port>5432</Port>
+    <User>postgres</User>
+    <Password>123456</Password>
+    <Database>ChatDin_DB</Database>
+    <SslMode>disable</SslMode>
+  </DB>
+  <DB name="MDCServer">
+    <Engine>mysql</Engine>
+    <Server>localhost</Server>
+    <Port>3306</Port>
+    <User>root</User>
+    <Password>admin</Password>
+    <Database>mdc</Database>
+    <SslMode>disable</SslMode>
+  </DB>
+
+
