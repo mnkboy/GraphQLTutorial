@@ -22,3 +22,16 @@ func CreateLink(model *linkmodel.LinkModel, db *gorm.DB) (bool, string) {
 	return true, "success"
 
 }
+
+//DeleteLink es una funcion para eliminar un elemento en la base de datos
+func DeleteLink(model *linkmodel.LinkModel, db *gorm.DB) (bool, string) {
+
+	er := db.Delete(model).Error
+
+	if er != nil {
+		return false, "error"
+	}
+
+	return true, "success"
+
+}

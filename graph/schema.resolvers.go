@@ -39,6 +39,28 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 	// panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) DeleteLink(ctx context.Context, input model.DeleteLink) (string, error) {
+	var modelLink = linkmodel.LinkModel{}
+	modelLink.IDLink = input.ID
+
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(path) // for example /home/user
+
+	// Pedimos una conexion a la base de datos POSTGRES
+	db := connection.OpenConnection(settings.PostgresDB)
+
+	//Creamos el modelo
+	linkrepositories.DeleteLink(&modelLink, db)
+
+	//Devolvemos  la info del modelo creado
+	return "success", nil
+
+	// panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
 	panic(fmt.Errorf("not implemented"))
 }

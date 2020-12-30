@@ -2,6 +2,10 @@
 
 package model
 
+type DeleteLink struct {
+	ID string `json:"id"`
+}
+
 type Link struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`
