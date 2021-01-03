@@ -6,17 +6,31 @@ package graph
 import (
 	"context"
 	"fmt"
+	"gqlGenTutorial/authentication"
 	"gqlGenTutorial/connection"
 	"gqlGenTutorial/dataaccess/repositories/linkrepositories"
+	"gqlGenTutorial/dataaccess/repositories/userrepositories"
 	"gqlGenTutorial/graph/generated"
 	"gqlGenTutorial/graph/model"
 	"gqlGenTutorial/models/linkmodel"
+	"gqlGenTutorial/models/usermodel"
 	"gqlGenTutorial/settings"
+	"gqlGenTutorial/util"
 	"log"
 	"os"
 )
 
+//CreateLink :
 func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) (*model.Link, error) {
+	//Auth
+	user := authentication.ForContext(ctx)
+
+	//Si falla mandamos error
+	if user == nil {
+		return nil, fmt.Errorf("access denied")
+	}
+
+	//Comenzamos a crear link
 	var modelLink = linkmodel.LinkModel{}
 	modelLink.Address = input.Address
 	modelLink.Title = input.Title
@@ -31,7 +45,10 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 	db := connection.OpenConnection(settings.PostgresDB)
 
 	//Creamos el modelo
-	linkrepositories.CreateLink(&modelLink, db)
+	ok, msg := linkrepositories.CreateLink(&modelLink, db)
+	if !ok {
+		return &model.Link{}, msg
+	}
 
 	//Devolvemos  la info del modelo creado
 	return &model.Link{ID: modelLink.IDLink, Title: modelLink.Title, Address: modelLink.Address}, nil
@@ -39,7 +56,16 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 	// panic(fmt.Errorf("not implemented"))
 }
 
+//DeleteLink :
 func (r *mutationResolver) DeleteLink(ctx context.Context, input model.DeleteLink) (string, error) {
+	//Auth
+	user := authentication.ForContext(ctx)
+
+	//Si falla mandamos error
+	if user == nil {
+		return "", fmt.Errorf("access denied")
+	}
+
 	var modelLink = linkmodel.LinkModel{}
 	modelLink.IDLink = input.ID
 
@@ -53,7 +79,10 @@ func (r *mutationResolver) DeleteLink(ctx context.Context, input model.DeleteLin
 	db := connection.OpenConnection(settings.PostgresDB)
 
 	//Creamos el modelo
-	linkrepositories.DeleteLink(&modelLink, db)
+	ok, msg := linkrepositories.DeleteLink(&modelLink, db)
+	if !ok {
+		return "error", msg
+	}
 
 	//Devolvemos  la info del modelo creado
 	return "success", nil
@@ -61,24 +90,84 @@ func (r *mutationResolver) DeleteLink(ctx context.Context, input model.DeleteLin
 	// panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+//CreateUser :
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
+	//Auth
+	user := authentication.ForContext(ctx)
+
+	//Si falla mandamos error
+	if user == nil {
+		return nil, fmt.Errorf("access denied")
+	}
+
+	var userModel = usermodel.UserModel{}
+	userModel.UserName = input.Username
+	userModel.Password, _ = util.HashPassword(input.Password)
+
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(path) // for example /home/user
+
+	// Pedimos una conexion a la base de datos POSTGRES
+	db := connection.OpenConnection(settings.PostgresDB)
+
+	//Creamos el modelo
+	ok, msg := userrepositories.CreateUser(&userModel, db)
+	if !ok {
+		return &model.User{}, msg
+	}
+	//Devolvemos  la info del modelo creado
+	return &model.User{ID: userModel.IDUser, Username: userModel.UserName, Password: userModel.Password}, nil
+
+	// panic(fmt.Errorf("not implemented"))
 }
 
+//Login :
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	//Auth
+	user := authentication.ForContext(ctx)
+
+	//Si falla mandamos error
+	if user == nil {
+		return "", fmt.Errorf("access denied")
+	}
+
+	modelUser := usermodel.UserModel{}
+	modelUser.UserName = input.Username
+	modelUser.Password = input.Password
+
+	// Pedimos una conexion a la base de datos POSTGRES
+	db := connection.OpenConnection(settings.PostgresDB)
+
+	//Validamos la autenticacion
+	return authentication.Authenticate(modelUser, db)
+	// panic(fmt.Errorf("not implemented"))
 }
 
+//RefreshToken :
 func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	username, err := authentication.ParseToken(input.Token)
+
+	if err != nil {
+		return "", fmt.Errorf("Access Denied")
+	}
+
+	token, err := authentication.GenerateToken(username)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
+//Links :
 func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {
 	var links []*model.Link
 	dummyLink := model.Link{
 		Title:   "our dummy link",
 		Address: "https://address.org",
-		User:    &model.User{Name: "admin"},
+		User:    &model.User{Username: "admin"},
 	}
 	links = append(links, &dummyLink)
 	return links, nil

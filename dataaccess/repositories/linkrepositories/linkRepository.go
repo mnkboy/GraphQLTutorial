@@ -11,27 +11,26 @@ import (
 // }
 
 //CreateLink es una funcion para crear un elemento en la base de datos
-func CreateLink(model *linkmodel.LinkModel, db *gorm.DB) (bool, string) {
+func CreateLink(model *linkmodel.LinkModel, db *gorm.DB) (bool, error) {
 
 	er := db.Create(model).Error
 
 	if er != nil {
-		return false, "error"
+		return false, er
 	}
 
-	return true, "success"
+	return true, nil
 
 }
 
 //DeleteLink es una funcion para eliminar un elemento en la base de datos
-func DeleteLink(model *linkmodel.LinkModel, db *gorm.DB) (bool, string) {
+func DeleteLink(model *linkmodel.LinkModel, db *gorm.DB) (bool, error) {
 
 	er := db.Delete(model).Error
 
 	if er != nil {
-		return false, "error"
+		return false, er
 	}
 
-	return true, "success"
-
+	return true, nil
 }
