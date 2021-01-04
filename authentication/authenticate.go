@@ -13,7 +13,7 @@ func Authenticate(model usermodel.UserModel, db *gorm.DB) (string, error) {
 
 	models, _ := userrepositories.RetrieveUser(&model, db)
 
-	if len(*models) > 1 && len(*models) == 0 {
+	if len(*models) > 1 || len(*models) == 0 {
 		return "", fmt.Errorf("Wrong user name or password")
 	}
 

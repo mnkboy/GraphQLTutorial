@@ -118,22 +118,18 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	if !ok {
 		return &model.User{}, msg
 	}
+
+	//Validamos la autenticacion
+	token, err := authentication.GenerateToken(userModel.UserName)
+
 	//Devolvemos  la info del modelo creado
-	return &model.User{ID: userModel.IDUser, Username: userModel.UserName, Password: userModel.Password}, nil
+	return &model.User{ID: token, Username: userModel.UserName, Password: userModel.Password}, nil
 
 	// panic(fmt.Errorf("not implemented"))
 }
 
 //Login :
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
-	//Auth
-	user := authentication.ForContext(ctx)
-
-	//Si falla mandamos error
-	if user == nil {
-		return "", fmt.Errorf("access denied")
-	}
-
 	modelUser := usermodel.UserModel{}
 	modelUser.UserName = input.Username
 	modelUser.Password = input.Password
